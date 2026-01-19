@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory Machine Events System - Documentation</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #7f8c8d;
+        }
+
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .diagram-container {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .diagram-container {
+                border: none;
+            }
+
+            h1 {
+                page-break-before: always;
+            }
+
+            h1:first-child {
+                page-break-before: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Factory Machine Events System</h1>
+    <p><strong>Technical Documentation & Architecture Overview</strong></p>
+    <p><em>Generated on: 2026-01-19</em></p>
+
+    <h2>1. System Architecture</h2>
+    <p>The system follows a modern 3-Tier Architecture designed for high performance and thread safety.</p>
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+        graph TD
+            Client[Sensors / Frontend] -->|POST /events/batch| API[Spring Boot API]
+            API[Spring Boot API] -->|Validation & Dedupe| Service[EventIngestionService]
+            Service -->|Read/Write (Transactions)| DB[(PostgreSQL)]
+            
+            Client -->|GET /stats| API
+            API -->|Query| Analytics[AnalyticsService]
+            Analytics -->|Aggregation / Index Scan| DB
+        </pre>
+    </div>
+
+    <ul>
+        <li><strong>Frontend</strong>: React 19 + Vite (Real-time Dashboard).</li>
+        <li><strong>Backend</strong>: Spring Boot 3.2 (Batch Processing, REST API).</li>
+        <li><strong>Database</strong>: PostgreSQL 15 (Optimized Storage).</li>
+    </ul>
+
+    <h2>2. Ingestion & Deduplication Flow</h2>
+    <p>We implement a <strong>"Last-Write-Wins"</strong> strategy with strictly transactional processing to handle
+        duplicates and out-of-order updates.</p>
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+        flowchart TD
+            Start[Receive Batch (List&lt;Event&gt;)] --> Validate{Valid Duration & Time?}
+            Validate -- No --> Reject[Add to Rejections]
+            Validate -- Yes --> CheckMem[Local Batch Dedupe]
+            CheckMem --> Transaction[Start DB Transaction]
+            Transaction --> DBCheck{Exists in DB?}
+            
+            DBCheck -- No --> Insert[Insert New Record]
+            DBCheck -- Yes --> PayloadCheck{Payload Matches?}
+            
+            PayloadCheck -- Yes --> Ignore[Ignore (Idempotent)]
+            PayloadCheck -- No --> TimeCheck{Newer than stored?}
+            
+            TimeCheck -- No --> IgnoreOld[Ignore (Out-of-Order)]
+            TimeCheck -- Yes --> Update[Update Record & Timestamp]
+        </pre>
+    </div>
+
+    <h3>Logic Breakdown</h3>
+    <ol>
+        <li><strong>Validation</strong>: Rejects negative durations and future timestamps (>15 mins).</li>
+        <li><strong>Batch Optimization</strong>: Duplicate IDs within the same incoming batch are resolved locally
+            first.</li>
+        <li><strong>Atomic Database Merge</strong>:
+            <ul>
+                <li>If the record does not exist: <strong>INSERT</strong>.</li>
+                <li>If it exists and is identical: <strong>IGNORE</strong> (Deduplication).</li>
+                <li>If it exists but is different:
+                    <ul>
+                        <li>If incoming event is newer: <strong>UPDATE</strong>.</li>
+                        <li>If incoming event is older (stale network packet): <strong>IGNORE</strong>.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>3. Database Schema</h2>
+    <p>PostgreSQL is used with indices tailored for analytical queries.</p>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        erDiagram
+            EVENTS {
+                varchar event_id PK
+                timestamp event_time
+                varchar machine_id
+                varchar line_id
+                bigint duration_ms
+                int defect_count
+                timestamp received_time
+            }
+        </pre>
+    </div>
+    <p><strong>Indexes:</strong></p>
+    <ul>
+        <li><code>idx_machine_time</code>: (machine_id, event_time) - Accelerates machine stats queries.</li>
+        <li><code>idx_line_time</code>: (line_id, event_time) - Accelerates top defect line aggregation.</li>
+    </ul>
+
+</body>
+
+</html>
