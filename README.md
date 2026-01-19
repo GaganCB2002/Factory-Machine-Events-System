@@ -8,34 +8,34 @@ The following diagram illustrates the complete **User Experience (UX)** from acc
 
 ```mermaid
 graph TD
-    User[User / Factory Operator] -->|Visits Web App| Landing[Landing Page]
-    Landing -->|Get Started| Dashboard[Main Dashboard]
+    User["User / Factory Operator"] -->|"Visits Web App"| Landing["Landing Page"]
+    Landing -->|"Get Started"| Dashboard["Main Dashboard"]
 
     subgraph "Real-time Monitoring & Action"
-        Dashboard -->|Views| LiveStats[Live KPI Stats]
-        Dashboard -->|Views| IngestionChart[Event Load Chart]
-        Dashboard -->|Clicks Alert| AlertItem[System Alert]
-        AlertItem -->|Opens| Modal[Resolution Modal]
-        Modal -->|Follows Guide| Resolved[Issue Resolved]
+        Dashboard -->|Views| LiveStats["Live KPI Stats"]
+        Dashboard -->|Views| IngestionChart["Event Load Chart"]
+        Dashboard -->|"Clicks Alert"| AlertItem["System Alert"]
+        AlertItem -->|Opens| Modal["Resolution Modal"]
+        Modal -->|"Follows Guide"| Resolved["Issue Resolved"]
     end
 
     subgraph "Deep Dive Analysis"
-        Dashboard -->|Navigates| Analytics[Analytics Page]
-        Analytics -->|Analyzes| DefectGraph[Production vs Defects]
-        Analytics -->|Monitors| SysLoad[CPU & Memory Load]
+        Dashboard -->|Navigates| Analytics["Analytics Page"]
+        Analytics -->|Analyzes| DefectGraph["Production vs Defects"]
+        Analytics -->|Monitors| SysLoad["CPU & Memory Load"]
     end
 
     subgraph "System Configuration"
-        Dashboard -->|Navigates| Settings[Settings Page]
-        Settings -->|Clicks| AutoSuggest[Auto-Suggest Identity]
-        AutoSuggest -->|Populates| Form[Machine Details]
-        Form -->|Save| SaveLogic{Backend Online?}
-        SaveLogic -- Yes --> API[POST /api/machines] --> DB[(PostgreSQL)]
-        SaveLogic -- No --> Local[LocalStorage (Offline Fallback)]
+        Dashboard -->|Navigates| Settings["Settings Page"]
+        Settings -->|Clicks| AutoSuggest["Auto-Suggest Identity"]
+        AutoSuggest -->|Populates| Form["Machine Details"]
+        Form -->|Save| SaveLogic{"Backend Online?"}
+        SaveLogic -- Yes --> API["POST /api/machines"] --> DB[("PostgreSQL")]
+        SaveLogic -- No --> Local["LocalStorage (Offline Fallback)"]
     end
 ```
 
-![User Journey Diagram](file:///C:/Users/gagan/.gemini/antigravity/brain/d34e5b76-d55d-4730-a188-b6f4db542a36/user_journey_flow_v2_1768802879153.png)
+
 
 ## 2. Technical Architecture
 
@@ -71,15 +71,15 @@ Factory Machine Events System/
 ### System Data Flow
 ```mermaid
 graph LR
-    Client[Sensors / Frontend] -->|Batch JSON| API[Spring Boot API]
-    API -->|Validate & Dedupe| Service[EventIngestionService]
-    Service -->|ACID Transaction| DB[(PostgreSQL)]
+    Client["Sensors / Frontend"] -->|"Batch JSON"| API["Spring Boot API"]
+    API -->|"Validate & Dedupe"| Service["EventIngestionService"]
+    Service -->|"ACID Transaction"| DB[("PostgreSQL")]
     
-    Client -->|Polls| StatsAPI[Stats Endpoint]
+    Client -->|Polls| StatsAPI["Stats Endpoint"]
     StatsAPI -->|Aggregates| DB
 ```
 
-![System Architecture Diagram](file:///C:/Users/gagan/.gemini/antigravity/brain/d34e5b76-d55d-4730-a188-b6f4db542a36/system_architecture_diagram_1768803143144.png)
+
 
 ## 3. Dedupe & Update Logic
 
@@ -103,7 +103,6 @@ flowchart TD
     TimeCheck -- Yes --> Update[Update Record]
 ```
 
-![Ingestion Logic Flowchart](file:///C:/Users/gagan/.gemini/antigravity/brain/d34e5b76-d55d-4730-a188-b6f4db542a36/ingestion_logic_flow_1768802673264.png)
 
 **Strategy: "Read-Then-Write" with In-Memory Pre-optimization**
 1.  **Local Batch Dedupe**: Duplicate `eventIds` within the *same* incoming batch are resolved in memory (O(1))—only the latest one survives.
