@@ -5,7 +5,7 @@ A high-performance, full-stack system for ingesting, validating, and analyzing r
 ## 1. Visual Application Workflow (User Journey)
 
 The following diagram illustrates the complete **User Experience (UX)** from accessing the platform to monitoring, analyzing, and configuring the factory systems.
-https://github.com/GaganCB2002/Factory-Machine-Events-System/blob/main/image/Screenshot%202026-01-19%20110542.png
+
 ```mermaid
 graph TD
     User["User / Factory Operator"] -->|"Visits Web App"| Landing["Landing Page"]
