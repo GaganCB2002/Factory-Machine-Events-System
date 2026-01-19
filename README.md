@@ -3,9 +3,12 @@
 A high-performance, full-stack system for ingesting, validating, and analyzing real-time machine events from a factory floor.
 
 ## 1. Visual Application Workflow (User Journey)
-
 The following diagram illustrates the complete **User Experience (UX)** from accessing the platform to monitoring, analyzing, and configuring the factory systems.
-
+![image alt](https://github.com/GaganCB2002/Factory-Machine-Events-System/blob/main/image/Screenshot%202026-01-19%20114618.png?raw=true)
+![image alt](https://github.com/GaganCB2002/Factory-Machine-Events-System/blob/main/image/Screenshot%202026-01-19%20110542.png?raw=true)
+![image alt](https://github.com/GaganCB2002/Factory-Machine-Events-System/blob/main/image/Screenshot%202026-01-19%20114623.png?raw=true)
+![image alt](https://github.com/GaganCB2002/Factory-Machine-Events-System/blob/main/image/Screenshot%202026-01-19%20114632.png?raw=true)
+![image alt](https://github.com/GaganCB2002/Factory-Machine-Events-System/blob/main/image/Screenshot%202026-01-19%20114641.png?raw=true)
 ```mermaid
 graph TD
     User["User / Factory Operator"] -->|"Visits Web App"| Landing["Landing Page"]
